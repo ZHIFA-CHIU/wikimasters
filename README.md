@@ -1,8 +1,7 @@
 # WikiMasters
+Project idea is from the [Build a Fullstack Next.js App, v4](https://frontendmasters.com/courses/fullstack-app-next-v4) 
 
-WikiMasters is a collaborative wiki-style content app built with Next.js, Drizzle ORM, PostgreSQL, Stack Auth, and Vercel Blob.
-
-Users can create, edit, view, and delete markdown-based wiki articles, including optional image uploads.
+Original code is from [here](https://github.com/btholt/fullstack-next-wiki)
 
 ## Tech Stack
 
