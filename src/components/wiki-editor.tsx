@@ -4,7 +4,9 @@ import MDEditor from "@uiw/react-md-editor";
 import { Upload, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { createArticle, updateArticleBySlug } from "@/app/actions/articles";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,7 +23,7 @@ interface WikiEditorProps {
 interface FormData {
   title: string;
   content: string;
-  files: File[];
+  image: File | null;
 }
 
 interface FormErrors {
@@ -38,10 +40,17 @@ export default function WikiEditor({
 }: WikiEditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
-  const [files, setFiles] = useState<File[]>([]);
+  const [image, setImage] = useState<File | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setTitle(initialTitle);
+    setContent(initialContent);
+    setImage(null);
+    setErrors({});
+  }, [initialTitle, initialContent,]);
 
   // Validate form
   const validateForm = (): boolean => {
@@ -59,18 +68,17 @@ export default function WikiEditor({
     return Object.keys(newErrors).length === 0;
   };
 
+  const resetTransientState = () => {
+    setImage(null);
+    setErrors({});
+  };
+
   // Handle file upload
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files;
-    if (selectedFiles) {
-      const newFiles = Array.from(selectedFiles);
-      setFiles((prev) => [...prev, ...newFiles]);
+    if (selectedFiles?.length) {
+      setImage(selectedFiles[0]);
     }
-  };
-
-  // Remove file
-  const removeFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Handle form submission
@@ -86,27 +94,28 @@ export default function WikiEditor({
     const formData: FormData = {
       title: title.trim(),
       content: content.trim(),
-      files,
+      image: image,
     };
 
-    // Log the form data (as requested - no actual API calls)
-    console.log("Form submitted:", {
-      action: isEditing ? "edit" : "create",
-      articleId: isEditing ? articleId : undefined,
-      data: formData,
-    });
-
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (!slug) {
+      const result = await createArticle(formData);
+      if (!result.success) {
+        toast.error(result.error || "Failed to create article.");
+      } else {
+        resetTransientState();
+        router.replace(`/wiki/${result.slug}`);
+      }
+    } else {
+      const result = await updateArticleBySlug({ slug, ...formData });
+      if (!result.success) {
+        toast.error(result.error || "Failed to update article.");
+      } else {
+        resetTransientState();
+        router.replace(`/wiki/${result.slug}`);
+      }
+    }
 
     setIsSubmitting(false);
-
-    // In a real app, you would navigate after successful submission
-    alert(
-      `Article ${
-        isEditing ? "updated" : "created"
-      } successfully! Check console for form data.`,
-    );
   };
 
   // Handle cancel
@@ -160,9 +169,8 @@ export default function WikiEditor({
             <div className="space-y-2">
               <Label htmlFor="content">Content (Markdown) *</Label>
               <div
-                className={`border rounded-md ${
-                  errors.content ? "border-destructive" : ""
-                }`}
+                className={`border rounded-md ${errors.content ? "border-destructive" : ""
+                  }`}
               >
                 <MDEditor
                   value={content}
@@ -197,52 +205,46 @@ export default function WikiEditor({
                     htmlFor="file-upload"
                     className="cursor-pointer text-sm font-medium"
                   >
-                    Click to upload files
+                    Click to upload an image
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Upload images, documents, or other files to attach to your
-                    article
+                    Upload an image to attach to your article
                   </p>
                 </div>
                 <Input
                   id="file-upload"
                   type="file"
-                  multiple
+                  name="image"
                   onChange={handleFileUpload}
                   className="sr-only"
+                  accept="image/jpeg, image/png, image/webp"
                 />
               </div>
 
               {/* Display uploaded files */}
-              {files.length > 0 && (
+              {image && (
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Uploaded Files:</Label>
                   <div className="space-y-2">
-                    {files.map((file, index) => (
-                      <div
-                        // biome-ignore lint/suspicious/noArrayIndexKey: the order won't change
-                        key={index}
-                        className="flex items-center justify-between p-2 bg-muted rounded-md"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium">
-                            {file.name}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            ({(file.size / 1024).toFixed(1)} KB)
-                          </span>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeFile(index)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                    <div className="flex items-center justify-between p-2 bg-muted rounded-md">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-medium">
+                          {image.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          ({(image.size / 1024).toFixed(1)} KB)
+                        </span>
                       </div>
-                    ))}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setImage(null)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
