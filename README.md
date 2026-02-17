@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WikiMasters
+
+WikiMasters is a collaborative wiki-style content app built with Next.js, Drizzle ORM, PostgreSQL, Stack Auth, and Vercel Blob.
+
+Users can create, edit, view, and delete markdown-based wiki articles, including optional image uploads.
+
+## Tech Stack
+
+- Next.js (App Router)
+- React + TypeScript
+- Drizzle ORM + PostgreSQL
+- Stack Auth (`@stackframe/stack`)
+- Vercel Blob (image storage)
+- Biome (lint/format)
+
+## Prerequisites
+
+- Node.js 20+
+- Bun (recommended) or npm
+- A PostgreSQL database
+- Stack Auth project credentials
+- Vercel Blob token
+
+## Environment Variables
+
+Create `.env.local` in the project root and define at least:
+
+- `DATABASE_URL` - PostgreSQL connection string
+- Stack Auth env vars required by `@stackframe/stack` for Next.js
+- Vercel Blob env var/token used by `@vercel/blob`
+
+`DATABASE_URL` is required by both runtime DB access and Drizzle tooling.
 
 ## Getting Started
 
-First, run the development server:
-
+1. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Run database migrations:
+```bash
+bun run db:generate
+bun run db:migrate
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. (Optional) Seed data:
+```bash
+bun run db:seed
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Start development server:
+```bash
+bun run dev
+```
 
-## Learn More
+Open [http://localhost:3000](http://localhost:3000).
 
-To learn more about Next.js, take a look at the following resources:
+## Available Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `bun run dev` - start development server
+- `bun run build` - build production app
+- `bun run start` - run production server
+- `bun run lint` - run Biome checks
+- `bun run format` - format code with Biome
+- `bun run db:generate` - generate Drizzle migration files
+- `bun run db:migrate` - apply Drizzle migrations
+- `bun run db:seed` - seed sample data
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+If you prefer npm, replace `bun run` with `npm run`.
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```txt
+src/
+  app/                  # routes, layout, server actions
+    actions/            # article + upload actions
+  components/           # UI and feature components
+  db/                   # Drizzle client, schema, seed scripts
+  stack/                # Stack Auth client/server setup
+drizzle/                # generated migrations + metadata
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Data Model
+
+Defined in `src/db/schema.ts`:
+
+- `articles`: title, slug, content, image URL, publish status, author, timestamps
+- `usersSync`: synchronized user profile data keyed by auth user ID
+
+## Notes
+
+- Image upload/delete is implemented in server actions at `src/app/actions/upload.ts`.
+- Article CRUD logic is in `src/app/actions/articles.ts`.
+- Caching uses Next.js cache tags (e.g. `ALL_ARTICLES` and per-article tags).
