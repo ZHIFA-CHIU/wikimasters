@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, ChevronRight, Edit, Home, User } from "lucide-react";
+import { Calendar, ChevronRight, Edit, Eye, Home, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useActionState, useEffect } from "react";
@@ -16,6 +16,7 @@ import DeleteArticleDialog from "./delete-article-dialog";
 export default function WikiArticleViewer({
   article,
   canEdit = false,
+  pageviews,
 }: WikiArticleViewerProps) {
   const [deleteState, deleteAction, isDeletePending] = useActionState(
     deleteArticleBySlug,
@@ -71,6 +72,11 @@ export default function WikiArticleViewer({
             </div>
             <div className="flex items-center">
               <Badge variant="secondary">Article</Badge>
+              <div className="ml-3 flex items-center text-sm text-muted-foreground">
+                <Eye className="h-4 w-4 mr-1" />
+                <span>{`${pageviews ?? "-"}`}</span>
+                <span className="ml-1">views</span>
+              </div>
             </div>
           </div>
         </div>

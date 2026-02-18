@@ -1,24 +1,30 @@
 # AGENT.md
 
-This file gives coding agents and contributors a fast, practical guide for working in this repository.
+Repository-specific guidance for coding agents and contributors.
 
-## Project Overview
+## Project Snapshot
 
 - App: `wikimasters`
-- Stack: Next.js (App Router), React, TypeScript, Drizzle ORM (PostgreSQL), Stack Auth, Vercel Blob
-- Package manager lockfile: `bun.lock` (Bun is preferred, npm also works)
+- Framework: Next.js App Router (TypeScript)
+- Data: PostgreSQL via Drizzle ORM
+- Auth: Stack Auth (`@stackframe/stack`)
+- Storage: Vercel Blob
+- Cache/Counter: Upstash Redis
+- Styling: Tailwind CSS v4 + design tokens in `src/app/globals.css`
 
-## Quick Start
+## Setup Checklist
 
-1. Install dependencies:
+1. Install deps:
 ```bash
 bun install
 ```
-2. Create or update `.env.local` with required environment variables:
+2. Configure `.env.local`:
 - `DATABASE_URL`
-- Stack Auth variables used by `@stackframe/stack` (project keys/secrets)
-- Vercel Blob token (for uploads)
-3. Generate and run DB migrations:
+- Stack Auth env vars
+- Vercel Blob env vars
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+3. Run DB migration flow:
 ```bash
 bun run db:generate
 bun run db:migrate
@@ -30,45 +36,34 @@ bun run dev
 
 ## Common Commands
 
-- `bun run dev` - start dev server
-- `bun run build` - production build
-- `bun run start` - start built app
-- `bun run lint` - Biome checks
-- `bun run format` - Biome format
-- `bun run db:generate` - generate Drizzle migration files
-- `bun run db:migrate` - apply migrations
-- `bun run db:seed` - seed sample data
+- `bun run dev`
+- `bun run build`
+- `bun run start`
+- `bun run lint`
+- `bun run format`
+- `bun run db:generate`
+- `bun run db:migrate`
+- `bun run db:seed`
 
-## Key Paths
+## Important Paths
 
-- `src/app/` - routes, layouts, server actions
-- `src/app/actions/articles.ts` - article CRUD server actions
-- `src/app/actions/upload.ts` - image upload/delete logic (Vercel Blob)
-- `src/db/` - database client, schema, seed, user sync
-- `src/components/` - UI and page components
-- `src/stack/` - Stack Auth client/server setup
-- `drizzle/` - SQL migrations and metadata
+- `src/app/layout.tsx` - app-level providers (next-themes + stack)
+- `src/app/globals.css` - theme tokens (light/dark)
+- `src/app/actions/articles.ts` - article CRUD logic
+- `src/app/actions/upload.ts` - blob upload/delete
+- `src/db/schema.ts` - Drizzle schema
+- `src/redis/index.ts` - Redis helpers (view counter increment)
+- `next.config.ts` - `next/image` remote host config
 
-## Data Model
+## Working Rules
 
-Main tables in `src/db/schema.ts`:
+- Keep server/client boundaries correct (`"use server"` vs `"use client"`).
+- Prefer small targeted edits over broad refactors.
+- Keep docs and schema in sync when adding DB fields.
+- For schema changes, generate migration files and mention DB impact in your summary.
+- Do not commit `.env.local` or credentials.
 
-- `articles`: title, slug, content, image URL, publish flag, author, timestamps
-- `usersSync`: synced user records keyed by Stack Auth user ID
+## Current Caveats
 
-## Coding Guidelines
-
-- Keep TypeScript strict and avoid `any`.
-- Preserve server/client boundaries.
-- Use `"use server"` only for server actions.
-- Use `"use client"` only where client hooks/state are required.
-- Follow existing error-handling style in server actions (`neverthrow`, domain errors).
-- Run `bun run lint` before finishing changes.
-- Keep UI consistent with existing components under `src/components/ui/`.
-
-## Notes for Agents
-
-- Do not commit secrets or `.env.local`.
-- Do not rewrite generated Drizzle files manually unless explicitly asked.
-- Prefer targeted edits over broad refactors.
-- If schema changes are made, include migration generation and note DB impact.
+- Redis currently increments view count in cache (`incrementViewCountBySlug`), but schema does not yet store a `viewCount` column in Postgres.
+- If implementing durable counts, add DB column + migration and define sync/flush strategy.

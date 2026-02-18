@@ -8,9 +8,11 @@ import WikiArticleViewer from "./wiki-article-viewer";
 const WikiArticleCachedViewer = async ({
   id,
   user,
+  pageViews,
 }: {
   id: string;
   user: CurrentServerUser | null;
+  pageViews: number | null;
 }) => {
   cacheLife("days");
   cacheTag(`article::${id}`);
@@ -26,6 +28,8 @@ const WikiArticleCachedViewer = async ({
     imageUrl: article.articles.imageUrl,
     slug: article.articles.slug,
   };
-  return <WikiArticleViewer article={data} canEdit={canEdit} />;
+  return (
+    <WikiArticleViewer article={data} canEdit={canEdit} pageviews={pageViews} />
+  );
 };
 export default WikiArticleCachedViewer;

@@ -1,70 +1,75 @@
 # WikiMasters
-Project idea is from the [Build a Fullstack Next.js App, v4](https://frontendmasters.com/courses/fullstack-app-next-v4) 
 
-Original code is from [here](https://github.com/btholt/fullstack-next-wiki)
+Project idea from [Build a Fullstack Next.js App, v4](https://frontendmasters.com/courses/fullstack-app-next-v4).  
+Original codebase inspiration: [btholt/fullstack-next-wiki](https://github.com/btholt/fullstack-next-wiki).
+
+## Overview
+
+WikiMasters is a Next.js App Router project for creating and editing wiki articles with markdown, auth, and image upload support.
 
 ## Tech Stack
 
-- Next.js (App Router)
-- React + TypeScript
+- Next.js 16 + React 19 + TypeScript
 - Drizzle ORM + PostgreSQL
 - Stack Auth (`@stackframe/stack`)
-- Vercel Blob (image storage)
-- Biome (lint/format)
+- Vercel Blob (`@vercel/blob`) for image upload
+- Upstash Redis (`@upstash/redis`) for view count increment cache
+- Tailwind CSS v4 + Biome
 
 ## Prerequisites
 
 - Node.js 20+
 - Bun (recommended) or npm
-- A PostgreSQL database
+- PostgreSQL
 - Stack Auth project credentials
 - Vercel Blob token
+- Upstash Redis REST credentials
 
 ## Environment Variables
 
-Create `.env.local` in the project root and define at least:
+Create `.env.local` and configure at least:
 
-- `DATABASE_URL` - PostgreSQL connection string
-- Stack Auth env vars required by `@stackframe/stack` for Next.js
-- Vercel Blob env var/token used by `@vercel/blob`
+- `DATABASE_URL`
+- Stack Auth env vars required by `@stackframe/stack`
+- Vercel Blob env vars required by `@vercel/blob`
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
 
-`DATABASE_URL` is required by both runtime DB access and Drizzle tooling.
-
-## Getting Started
+## Local Setup
 
 1. Install dependencies:
 ```bash
 bun install
 ```
 
-2. Run database migrations:
+2. Generate and apply DB migrations:
 ```bash
 bun run db:generate
 bun run db:migrate
 ```
 
-3. (Optional) Seed data:
+3. Optional seed:
 ```bash
 bun run db:seed
 ```
 
-4. Start development server:
+4. Start app:
 ```bash
 bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+App URL: [http://localhost:3000](http://localhost:3000)
 
-## Available Scripts
+## Scripts
 
-- `bun run dev` - start development server
-- `bun run build` - build production app
-- `bun run start` - run production server
-- `bun run lint` - run Biome checks
-- `bun run format` - format code with Biome
-- `bun run db:generate` - generate Drizzle migration files
-- `bun run db:migrate` - apply Drizzle migrations
-- `bun run db:seed` - seed sample data
+- `bun run dev`
+- `bun run build`
+- `bun run start`
+- `bun run lint`
+- `bun run format`
+- `bun run db:generate`
+- `bun run db:migrate`
+- `bun run db:seed`
 
 If you prefer npm, replace `bun run` with `npm run`.
 
@@ -72,23 +77,25 @@ If you prefer npm, replace `bun run` with `npm run`.
 
 ```txt
 src/
-  app/                  # routes, layout, server actions
-    actions/            # article + upload actions
-  components/           # UI and feature components
-  db/                   # Drizzle client, schema, seed scripts
-  stack/                # Stack Auth client/server setup
-drizzle/                # generated migrations + metadata
+  app/
+    actions/          # server actions (articles + upload)
+  components/         # UI + feature components
+  db/                 # drizzle schema/client/seed
+  redis/              # upstash redis helpers
+  stack/              # stack auth setup
+drizzle/              # generated migrations
 ```
 
-## Data Model
+## Notable Implementation Details
 
-Defined in `src/db/schema.ts`:
-
-- `articles`: title, slug, content, image URL, publish status, author, timestamps
-- `usersSync`: synchronized user profile data keyed by auth user ID
+- Article CRUD: `src/app/actions/articles.ts`
+- Image upload/delete: `src/app/actions/upload.ts`
+- Redis view increment helper: `src/redis/index.ts`
+- Theme provider wiring: `src/app/layout.tsx`
+- App dark tokens: `src/app/globals.css`
+- `next/image` remote pattern is configured for Vercel Blob hostnames in `next.config.ts`.
 
 ## Notes
 
-- Image upload/delete is implemented in server actions at `src/app/actions/upload.ts`.
-- Article CRUD logic is in `src/app/actions/articles.ts`.
-- Caching uses Next.js cache tags (e.g. `ALL_ARTICLES` and per-article tags).
+- Current DB schema in `src/db/schema.ts` does not include a persisted `viewCount` column yet.
+- If you want durable view counts in Postgres, add `view_count` to `articles` and run migrations.

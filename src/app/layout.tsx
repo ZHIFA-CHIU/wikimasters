@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { stackClientApp } from "../stack/client";
 import "./globals.css";
+import { ThemeProvider } from "next-themes";
 import NavBar from "@/components/nav-bar";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -27,17 +28,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <StackProvider app={stackClientApp}>
-          <StackTheme>
-            <NavBar />
-            {children}
-          </StackTheme>
-        </StackProvider>
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <StackProvider app={stackClientApp}>
+            <StackTheme>
+              <NavBar />
+              {children}
+            </StackTheme>
+          </StackProvider>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

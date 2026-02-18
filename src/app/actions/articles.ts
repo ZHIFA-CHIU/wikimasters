@@ -2,7 +2,7 @@
 import { and, desc, eq } from "drizzle-orm";
 import { Match } from "effect";
 import { errAsync, okAsync, ResultAsync } from "neverthrow";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import db from "@/db";
 import { articles, usersSync } from "@/db/schema";
@@ -133,7 +133,7 @@ export const createArticle = async ({
         return {
           success: true,
           slug: article.slug,
-        } as const
+        } as const;
       },
       (error) =>
         Match.value(error).pipe(
@@ -156,11 +156,13 @@ export const updateArticleBySlug = async ({
   image,
   slug,
   title,
+  viewCount,
 }: {
   slug: string;
   title?: string;
   content?: string;
   image: File | null;
+  viewCount?: number;
 }) =>
   getUserResultAsync()
     .andThen((user) => {
@@ -219,6 +221,7 @@ export const updateArticleBySlug = async ({
             title: title ?? payload.article.title,
             content: content ?? payload.article.content,
             imageUrl: payload.imageUrl ?? payload.article.imageUrl,
+            viewCount: viewCount ?? payload.article.viewCount,
           })
           .where(
             and(
@@ -236,8 +239,8 @@ export const updateArticleBySlug = async ({
         revalidateTag(`article::${slug}`, "max");
         return {
           success: true,
-          slug
-        } as const
+          slug,
+        } as const;
       },
       (error) =>
         Match.value(error).pipe(

@@ -4,7 +4,13 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   images: {
-    remotePatterns: [new URL(`${process.env.BLOB_BASE_URL}/**`)],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+        pathname: "/**",
+      },
+    ],
   },
 };
 

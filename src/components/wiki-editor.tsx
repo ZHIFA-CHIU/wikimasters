@@ -3,6 +3,7 @@
 import MDEditor from "@uiw/react-md-editor";
 import { Upload, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -44,13 +45,14 @@ export default function WikiEditor({
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     setTitle(initialTitle);
     setContent(initialContent);
     setImage(null);
     setErrors({});
-  }, [initialTitle, initialContent,]);
+  }, [initialTitle, initialContent]);
 
   // Validate form
   const validateForm = (): boolean => {
@@ -169,12 +171,14 @@ export default function WikiEditor({
             <div className="space-y-2">
               <Label htmlFor="content">Content (Markdown) *</Label>
               <div
-                className={`border rounded-md ${errors.content ? "border-destructive" : ""
-                  }`}
+                className={`border rounded-md ${
+                  errors.content ? "border-destructive" : ""
+                }`}
               >
                 <MDEditor
                   value={content}
                   onChange={(val) => setContent(val || "")}
+                  data-color-mode={resolvedTheme === "dark" ? "dark" : "light"}
                   preview="edit"
                   hideToolbar={false}
                   visibleDragbar={false}
