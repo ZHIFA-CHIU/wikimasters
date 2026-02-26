@@ -156,7 +156,6 @@ export const updateArticleBySlug = async ({
   image,
   slug,
   title,
-  viewCount,
 }: {
   slug: string;
   title?: string;
@@ -221,7 +220,6 @@ export const updateArticleBySlug = async ({
             title: title ?? payload.article.title,
             content: content ?? payload.article.content,
             imageUrl: payload.imageUrl ?? payload.article.imageUrl,
-            viewCount: viewCount ?? payload.article.viewCount,
           })
           .where(
             and(

@@ -21,12 +21,12 @@ const NavBar = async () => {
         </Link>
         <NavigationMenu>
           <NavigationMenuList className="flex items-center gap-2">
-            <NavigationMenuItem>
-              <ModeToggle />
-            </NavigationMenuItem>
             <Suspense fallback={<NavUserSectionSkeleton />}>
               <NavUserSection />
             </Suspense>
+            <NavigationMenuItem>
+              <ModeToggle />
+            </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
       </div>

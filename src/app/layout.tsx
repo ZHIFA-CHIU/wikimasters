@@ -6,6 +6,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import NavBar from "@/components/nav-bar";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,8 +41,10 @@ export default function RootLayout({
         >
           <StackProvider app={stackClientApp}>
             <StackTheme>
-              <NavBar />
-              {children}
+              <TooltipProvider>
+                <NavBar />
+                {children}
+              </TooltipProvider>
             </StackTheme>
           </StackProvider>
           <Toaster />

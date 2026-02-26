@@ -19,6 +19,11 @@ const NavUserSection = async () => {
     <>
       <NavigationMenuItem>
         <Button asChild variant={"outline"}>
+          <Link href={"/ai"}>Ask AI</Link>
+        </Button>
+      </NavigationMenuItem>
+      <NavigationMenuItem>
+        <Button asChild variant={"outline"}>
           <Link href={"/wiki/edit/new"}>New</Link>
         </Button>
       </NavigationMenuItem>
